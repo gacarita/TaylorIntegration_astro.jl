@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'master'
+      - 'jp/docs'
     paths-ignore:
       - 'LICENSE.md'
       - 'README.md'
