@@ -350,7 +350,7 @@ function taylorinteg(f!, g, q0::Array{U,1}, trange::AbstractVector{T},
         t0 = tnext
         @inbounds t[0] = t0
         nsteps += 1
-        if nsteps > maxsteps
+        if nsteps > maxsteps || esc!(dx,x,p,t) == true
             @warn("""
             Maximum number of integration steps reached; exiting.
             """)
@@ -359,4 +359,34 @@ function taylorinteg(f!, g, q0::Array{U,1}, trange::AbstractVector{T},
     end
 
     return transpose(xv), view(tvS,1:nevents-1), view(transpose(view(xvS,:,1:nevents-1)),1:nevents-1,:), view(gvS,1:nevents-1)
+end
+
+function esc!(du, u, p, t)
+
+	local mu1 = 1-p
+	local mu2 = p
+	local mtot=1.0/(1.0-mu2)
+	r1=sqrt((u[1]+mu2)^2+u[2]^2)
+	println(r1)
+    r2=sqrt((u[1]-mu1)^2+u[2]^2)
+    r=sqrt(u[1]^2+u[2]^2)
+	# collision with primary
+	if r1 <= 0.005
+		println("col")
+		return true
+	end
+	# collision with secondary
+	## check if is star
+	if mu2*mtot >= 0.1 && r2 < 0.005*mu2*mtot
+		println("col")
+		return true
+	elseif mu2*mtot < 0.1 && r2 < 0.0005
+		println("col")
+		return true
+	end
+	# escape
+	if r > 10
+		println("escape")
+		return true
+	end
 end
